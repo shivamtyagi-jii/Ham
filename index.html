@@ -8,7 +8,7 @@
   <style>
     :root {
       --bg: #fff7ed;
-      --surface: rgba(255, 255, 255, 0.93);
+      --surface: rgba(255, 255, 255, 0.95);
       --surface-alt: #f8fafc;
       --text: #0f172a;
       --muted: #64748b;
@@ -16,17 +16,17 @@
       --primary: #ea580c;
       --primary-hover: #c2410c;
       --green: #16a34a;
-      --green-bg: rgba(22, 163, 74, 0.12);
+      --green-bg: rgba(22, 163, 74, 0.14);
       --yellow: #d97706;
-      --yellow-bg: rgba(217, 119, 6, 0.12);
+      --yellow-bg: rgba(217, 119, 6, 0.14);
       --red: #dc2626;
-      --red-bg: rgba(220, 38, 38, 0.12);
+      --red-bg: rgba(220, 38, 38, 0.14);
       --shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
     }
 
     body.dark {
       --bg: #070b14;
-      --surface: rgba(17, 24, 39, 0.93);
+      --surface: rgba(17, 24, 39, 0.95);
       --surface-alt: #1e293b;
       --text: #f8fafc;
       --muted: #94a3b8;
@@ -38,45 +38,9 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
     body {
-      background: var(--bg); color: var(--text); transition: background 0.4s, color 0.2s;
-      min-height: 100vh; padding-bottom: 50px; position: relative; overflow-x: hidden;
+      background: var(--bg); color: var(--text); transition: background 0.3s, color 0.2s;
+      min-height: 100vh; padding-bottom: 50px;
     }
-
-    /* Sky Background: Sun in Day Mode, Moon + Stars in Night Mode */
-    .sky-decor {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 0; overflow: hidden;
-    }
-    .sun-orb {
-      position: fixed; top: 55px; right: 6%;
-      width: 90px; height: 90px; border-radius: 50%;
-      background: radial-gradient(circle, #fde047 0%, #f59e0b 75%);
-      box-shadow: 0 0 60px 20px rgba(250, 204, 21, 0.4);
-      transition: all 0.5s ease;
-      opacity: 0.85;
-    }
-    body.dark .sun-orb { transform: translateY(-180px) scale(0.5); opacity: 0; }
-    .moon-orb {
-      position: fixed; top: 55px; right: 6%;
-      width: 80px; height: 80px; border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #f8fafc, #cbd5e1 75%);
-      box-shadow: 0 0 50px 12px rgba(148, 163, 184, 0.35);
-      transition: all 0.5s ease;
-      transform: translateY(-180px) scale(0.5); opacity: 0;
-    }
-    body.dark .moon-orb { transform: translateY(0) scale(1); opacity: 0.9; }
-    .stars-layer {
-      position: fixed; inset: 0;
-      background-image:
-        radial-gradient(2px 2px at 18% 22%, #fff, transparent),
-        radial-gradient(1.5px 1.5px at 42% 14%, #e2e8f0, transparent),
-        radial-gradient(2px 2px at 70% 28%, #fff, transparent),
-        radial-gradient(1.5px 1.5px at 85% 38%, #cbd5e1, transparent);
-      opacity: 0; transition: opacity 0.5s ease;
-    }
-    body.dark .stars-layer { opacity: 0.55; }
-
-    .navbar, .login-container, .container { position: relative; z-index: 2; }
 
     .navbar {
       background: var(--surface); backdrop-filter: blur(12px);
@@ -98,6 +62,11 @@
     .btn-success { background: var(--green); color: #fff; border-color: var(--green); }
     .btn-danger { background: var(--red); color: #fff; border-color: var(--red); }
 
+    /* Highlighted Active Stock Buttons */
+    .stock-btn-in.active-stock { background: var(--green); color: #fff; border-color: var(--green); }
+    .stock-btn-low.active-stock { background: var(--yellow); color: #fff; border-color: var(--yellow); }
+    .stock-btn-out.active-stock { background: var(--red); color: #fff; border-color: var(--red); }
+
     .toast-alert {
       position: fixed; bottom: 24px; right: 24px; z-index: 999;
       background: var(--surface); border-left: 6px solid var(--primary);
@@ -111,7 +80,7 @@
     }
 
     .login-container {
-      max-width: 440px; margin: 50px auto; background: var(--surface); backdrop-filter: blur(12px);
+      max-width: 440px; margin: 50px auto; background: var(--surface);
       border: 1px solid var(--border); border-radius: 16px; padding: 26px; box-shadow: var(--shadow);
     }
     .input-group { margin-bottom: 14px; }
@@ -132,7 +101,6 @@
     .panel-box {
       background: var(--surface); border: 2px solid var(--primary); border-radius: 14px;
       padding: 18px; margin-bottom: 20px; box-shadow: var(--shadow);
-      transition: transform 0.2s;
     }
     .panel-box.flash-ring {
       animation: pulseRing 0.8s ease-in-out 2;
@@ -180,31 +148,25 @@
 </head>
 <body>
 
-  <!-- Animated Day Sun & Night Moon Sky Background -->
-  <div class="sky-decor">
-    <div class="sun-orb"></div>
-    <div class="moon-orb"></div>
-    <div class="stars-layer"></div>
-  </div>
-
   <!-- Live Toast Notification -->
   <div id="liveToast" class="toast-alert hidden"></div>
 
   <nav class="navbar">
     <div class="brand">🏪 StallScout <span>SHOPKEEPER PORTAL</span></div>
     <div class="nav-controls">
+      <span id="exactClockBadge" class="badge badge-yellow">🕒 --:--</span>
       <a href="student.html" style="text-decoration:none;">
         <button type="button">🎓 Student Portal</button>
       </a>
       <button id="completedDrawerBtn" class="hidden" onclick="toggleCompletedDrawer()">
         ✅ Completed Orders (<span id="completedCount">0</span>)
       </button>
-      <button onclick="toggleTheme()" id="themeBtn">🌙 Night</button>
+      <button onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
       <button id="logoutBtn" class="hidden" onclick="logout()">🚪 Logout</button>
     </div>
   </nav>
 
-  <!-- SHOPKEEPER LOGIN (Unique Access Per Stall) -->
+  <!-- SHOPKEEPER LOGIN -->
   <div id="loginBox" class="login-container">
     <h2 style="margin-bottom: 6px;">🏪 Shopkeeper Exclusive Login</h2>
     <p style="color: var(--muted); font-size: 0.84rem; margin-bottom: 16px;">
@@ -225,10 +187,10 @@
     <div class="input-group">
       <label>2. Your Assigned Stall Type</label>
       <select id="ownShopType" onchange="updatePasscodeHint()">
-        <option value="Stationery Shop">📚 Stationery Shop (9 AM – 9 PM)</option>
-        <option value="Fruit & Juice Corner">🍹 Fruit & Juice Corner (9 AM – 10 PM)</option>
-        <option value="Day Canteen">☀️ Day Canteen (8 AM – 10 PM)</option>
-        <option value="Night Canteen">🌙 Night Canteen (10 PM – 2 AM)</option>
+        <option value="Stationery Shop">📚 Stationery Shop</option>
+        <option value="Fruit & Juice Corner">🍹 Fruit & Juice Corner</option>
+        <option value="Day Canteen">☀️ Day Canteen</option>
+        <option value="Night Canteen">🌙 Night Canteen</option>
       </select>
     </div>
     <div class="input-group">
@@ -241,10 +203,10 @@
     </button>
   </div>
 
-  <!-- SHOPKEEPER MAIN DASHBOARD (Strictly Locked to 1 Bhawan & 1 Stall) -->
+  <!-- SHOPKEEPER MAIN DASHBOARD -->
   <div id="appBox" class="container hidden">
 
-    <!-- Locked Stall Identity Header (No Switcher Dropdowns!) -->
+    <!-- Locked Stall Identity Header -->
     <div class="shop-identity-bar">
       <div>
         <span style="font-size:0.74rem; color:var(--muted); font-weight:700;">🔒 VERIFIED SINGLE-STALL SESSION (LOCKED):</span>
@@ -299,6 +261,18 @@
   </div>
 
   <script>
+    // Unique Client ID so this tab NEVER overwrites itself with its own delayed MQTT echo
+    const CLIENT_ID = "shop_" + Math.random().toString(36).substring(2, 10) + "_" + Date.now();
+
+    // Exact System Clock Display
+    function updateClockDisplay() {
+      const nowStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const el = document.getElementById("exactClockBadge");
+      if (el) el.innerText = "🕒 " + nowStr;
+    }
+    setInterval(updateClockDisplay, 1000);
+    updateClockDisplay();
+
     // --- WEB AUDIO SYNTHESIZER ---
     let audioCtx = null;
     function unlockAudio() {
@@ -333,10 +307,10 @@
       box.innerText = msg;
       box.classList.remove("hidden");
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => box.classList.add("hidden"), 5000);
+      toastTimer = setTimeout(() => box.classList.add("hidden"), 4500);
     }
 
-    // --- UNIQUE PASSCODE GENERATOR PER BHAWAN + STALL (1 Shopkeeper = 1 Stall Access Only) ---
+    // --- UNIQUE PASSCODE GENERATOR PER BHAWAN + STALL ---
     const BHAWAN_CODE_MAP = {
       "Rajendra Bhawan (RJB)": "RJB",
       "Rajiv Bhawan": "RAJIV",
@@ -364,12 +338,11 @@
       const code = getExpectedPasscode(b, s);
       document.getElementById("ownPin").value = code;
       document.getElementById("passcodeHintBox").innerHTML =
-        `🔑 Unique Stall Passcode for <b>${b.split(' ')[0]} ${s}</b>: <code>${code}</code> (Auto-filled for Hackathon Demo)`;
+        `🔑 Unique Stall Passcode for <b>${b.split(' ')[0]} ${s}</b>: <code>${code}</code> (Auto-filled for Demo)`;
     }
 
     // --- COMPLETE EXCEL CATALOG ---
     const BASE_CATALOG = [
-      // 1. Stationery Shop (from statioanary.xlsx)
       { id: 101, shop: "Stationery Shop", category: "Stationery", name: "Pencil", price: 5, defaultStatus: "In Stock" },
       { id: 102, shop: "Stationery Shop", category: "Stationery", name: "Pen", price: 10, defaultStatus: "In Stock" },
       { id: 103, shop: "Stationery Shop", category: "Stationery", name: "Register Ruled", price: 60, defaultStatus: "In Stock" },
@@ -385,7 +358,6 @@
       { id: 113, shop: "Stationery Shop", category: "Stationery", name: "Graph Paper", price: 20, defaultStatus: "In Stock" },
       { id: 114, shop: "Stationery Shop", category: "Daily Essentials", name: "Water Bottle", price: 20, defaultStatus: "In Stock" },
 
-      // 2. Fruit & Juice Corner (from fruitshop.xlsx)
       { id: 201, shop: "Fruit & Juice Corner", category: "Fruit", name: "Fruit Chaat", price: 40, defaultStatus: "In Stock" },
       { id: 202, shop: "Fruit & Juice Corner", category: "Fruit", name: "Apple (Market Price)", price: 30, defaultStatus: "In Stock" },
       { id: 203, shop: "Fruit & Juice Corner", category: "Fruit", name: "Banana", price: 10, defaultStatus: "In Stock" },
@@ -400,7 +372,6 @@
       { id: 212, shop: "Fruit & Juice Corner", category: "Juice", name: "Mixed Juice", price: 45, defaultStatus: "In Stock" },
       { id: 213, shop: "Fruit & Juice Corner", category: "Juice", name: "Lemon Shikanji", price: 20, defaultStatus: "In Stock" },
 
-      // 3. Day Canteen (from price list.xlsx)
       { id: 301, shop: "Day Canteen", category: "Paratha", name: "Plain Paratha", price: 10, defaultStatus: "In Stock" },
       { id: 302, shop: "Day Canteen", category: "Paratha", name: "Aloo Paratha", price: 15, defaultStatus: "In Stock" },
       { id: 303, shop: "Day Canteen", category: "Paratha", name: "Paneer Paratha", price: 20, defaultStatus: "In Stock" },
@@ -423,7 +394,6 @@
       { id: 320, shop: "Day Canteen", category: "Bread & Toast", name: "Bun Butter", price: 20, defaultStatus: "In Stock" },
       { id: 321, shop: "Day Canteen", category: "Bread & Toast", name: "French Toast", price: 30, defaultStatus: "In Stock" },
 
-      // 4. Night Canteen (from price list.xlsx)
       { id: 401, shop: "Night Canteen", category: "Paratha", name: "Plain Paratha", price: 10, defaultStatus: "In Stock" },
       { id: 402, shop: "Night Canteen", category: "Paratha", name: "Aloo Paratha", price: 15, defaultStatus: "In Stock" },
       { id: 403, shop: "Night Canteen", category: "Paratha", name: "Paneer Paratha", price: 20, defaultStatus: "In Stock" },
@@ -447,42 +417,96 @@
       { id: 421, shop: "Night Canteen", category: "Bread & Toast", name: "French Toast", price: 30, defaultStatus: "In Stock" }
     ];
 
-    const STORAGE_KEY = "STALL_SCOUT_IITR_V4";
-    const DEFAULT_SYNC_TOPIC = "stallscout/iitr/v4/live";
+    const STORAGE_KEY = "STALL_SCOUT_IITR_V5";
+    const DEFAULT_SYNC_TOPIC = "stallscout/iitr/v5/live";
     let mqttClient = null;
 
     let appState = {
       stockByBhawanItem: {},
+      stockUpdatedAt: {},
       crowdByShop: {},
+      crowdUpdatedAt: {},
       votesByShop: {},
       orders: []
     };
 
+    function ensureStateStructure(st) {
+      if (!st.stockByBhawanItem) st.stockByBhawanItem = {};
+      if (!st.stockUpdatedAt) st.stockUpdatedAt = {};
+      if (!st.crowdByShop) st.crowdByShop = {};
+      if (!st.crowdUpdatedAt) st.crowdUpdatedAt = {};
+      if (!st.votesByShop) st.votesByShop = {};
+      if (!st.orders) st.orders = [];
+      return st;
+    }
+
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) { try { appState = JSON.parse(saved); } catch(e){} }
+    if (saved) {
+      try { appState = ensureStateStructure(JSON.parse(saved)); } catch (e) {}
+    }
 
     let knownOrderIds = new Set((appState.orders || []).map(o => o.orderId));
     let ownerLoggedIn = false;
-    let lockedBhawan = null; // Strictly locked after login
-    let lockedShop = null;   // Strictly locked after login
+    let lockedBhawan = null;
+    let lockedShop = null;
     let selectedCategory = "All";
     let showCompleted = false;
 
-    // Initialize Passcode Hint on Load
     updatePasscodeHint();
 
-    function checkAndRingForNewOrders(incomingState) {
-      const incomingOrders = incomingState.orders || [];
-      let newMatchingOrder = null;
+    // Timestamp-based smart state merge (Prevents stale state from EVER reverting newer clicks!)
+    function mergeIncomingState(incoming) {
+      if (!incoming || incoming.senderId === CLIENT_ID) return false;
+      ensureStateStructure(incoming);
+      let changed = false;
 
-      incomingOrders.forEach(o => {
-        if (!knownOrderIds.has(o.orderId)) {
-          knownOrderIds.add(o.orderId);
-          if (ownerLoggedIn && o.bhawan === lockedBhawan && o.shop === lockedShop) {
-            newMatchingOrder = o;
-          }
+      // 1. Merge Stock by Newer Timestamp
+      Object.keys(incoming.stockByBhawanItem).forEach(k => {
+        const incTime = incoming.stockUpdatedAt[k] || 0;
+        const locTime = appState.stockUpdatedAt[k] || 0;
+        if (incTime >= locTime && appState.stockByBhawanItem[k] !== incoming.stockByBhawanItem[k]) {
+          appState.stockByBhawanItem[k] = incoming.stockByBhawanItem[k];
+          appState.stockUpdatedAt[k] = incTime;
+          changed = true;
         }
       });
+
+      // 2. Merge Crowd by Newer Timestamp
+      Object.keys(incoming.crowdByShop).forEach(k => {
+        const incTime = incoming.crowdUpdatedAt[k] || 0;
+        const locTime = appState.crowdUpdatedAt[k] || 0;
+        if (incTime >= locTime && appState.crowdByShop[k] !== incoming.crowdByShop[k]) {
+          appState.crowdByShop[k] = incoming.crowdByShop[k];
+          appState.crowdUpdatedAt[k] = incTime;
+          changed = true;
+        }
+      });
+
+      // 3. Merge Orders by OrderId & Newer Timestamp
+      const orderMap = new Map();
+      appState.orders.forEach(o => orderMap.set(o.orderId, o));
+
+      let newMatchingOrder = null;
+      (incoming.orders || []).forEach(incOrder => {
+        const existing = orderMap.get(incOrder.orderId);
+        if (!existing) {
+          orderMap.set(incOrder.orderId, incOrder);
+          changed = true;
+          if (!knownOrderIds.has(incOrder.orderId)) {
+            knownOrderIds.add(incOrder.orderId);
+            if (ownerLoggedIn && incOrder.bhawan === lockedBhawan && incOrder.shop === lockedShop) {
+              newMatchingOrder = incOrder;
+            }
+          }
+        } else if ((incOrder.updatedAt || 0) > (existing.updatedAt || 0) && incOrder.status !== existing.status) {
+          orderMap.set(incOrder.orderId, incOrder);
+          changed = true;
+        }
+      });
+
+      if (changed) {
+        appState.orders = Array.from(orderMap.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      }
 
       if (newMatchingOrder) {
         playShopkeeperOrderBell();
@@ -492,6 +516,8 @@
         void panel.offsetWidth;
         panel.classList.add("flash-ring");
       }
+
+      return changed;
     }
 
     function getItemStatus(bhawan, item) {
@@ -514,10 +540,10 @@
         if (topic === DEFAULT_SYNC_TOPIC) {
           try {
             const incoming = JSON.parse(message.toString());
-            checkAndRingForNewOrders(incoming);
-            appState = incoming;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-            renderOwner();
+            if (mergeIncomingState(incoming)) {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+              renderOwner();
+            }
           } catch (err) {}
         }
       });
@@ -525,26 +551,29 @@
 
     function broadcastStateUpdate() {
       (appState.orders || []).forEach(o => knownOrderIds.add(o.orderId));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      appState.senderId = CLIENT_ID;
+      const stateStr = JSON.stringify(appState);
+      localStorage.setItem(STORAGE_KEY, stateStr);
       if (mqttClient && mqttClient.connected) {
-        mqttClient.publish(DEFAULT_SYNC_TOPIC, JSON.stringify(appState), { qos: 1, retain: true });
+        mqttClient.publish(DEFAULT_SYNC_TOPIC, stateStr, { qos: 1, retain: true });
       }
       renderOwner();
     }
 
-    window.addEventListener("storage", () => {
-      const s = localStorage.getItem(STORAGE_KEY);
-      if (s) {
-        const incoming = JSON.parse(s);
-        checkAndRingForNewOrders(incoming);
-        appState = incoming;
-        renderOwner();
+    window.addEventListener("storage", (e) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          const incoming = JSON.parse(e.newValue);
+          if (mergeIncomingState(incoming)) {
+            renderOwner();
+          }
+        } catch (err) {}
       }
     });
 
     function toggleTheme() {
       document.body.classList.toggle("dark");
-      document.getElementById("themeBtn").innerText = document.body.classList.contains("dark") ? "☀️ Day" : "🌙 Night";
+      document.getElementById("themeBtn").innerText = document.body.classList.contains("dark") ? "☀️ Light Mode" : "🌙 Dark Mode";
     }
 
     function toggleCompletedDrawer() {
@@ -564,17 +593,10 @@
         return;
       }
 
-      // Lock session strictly to this shopkeeper's Bhawan and Stall
       lockedBhawan = chosenBhawan;
       lockedShop = chosenShop;
       ownerLoggedIn = true;
       selectedCategory = "All";
-
-      const h = new Date().getHours();
-      if (h >= 19 || h < 6) {
-        document.body.classList.add("dark");
-        document.getElementById("themeBtn").innerText = "☀️ Day";
-      }
 
       initCloudSync();
 
@@ -601,6 +623,7 @@
       unlockAudio();
       const shopKey = `${lockedBhawan}__${lockedShop}`;
       appState.crowdByShop[shopKey] = status;
+      appState.crowdUpdatedAt[shopKey] = Date.now();
       appState.votesByShop[shopKey] = { Normal: 0, Crowded: 0 };
       broadcastStateUpdate();
     }
@@ -610,6 +633,7 @@
       unlockAudio();
       const key = `${lockedBhawan}__${itemId}`;
       appState.stockByBhawanItem[key] = newStatus;
+      appState.stockUpdatedAt[key] = Date.now();
       broadcastStateUpdate();
     }
 
@@ -621,6 +645,7 @@
       );
       if (!order) return;
 
+      order.updatedAt = Date.now();
       if (decision === "ready") {
         order.status = "✅ Ready for Pickup";
         showToast(`✔ Order ${orderId} marked Ready! Student notified.`);
@@ -631,6 +656,7 @@
         order.status = "❌ Cancelled (Out of Stock)";
         const key = `${order.bhawan}__${order.itemId}`;
         appState.stockByBhawanItem[key] = "Out of Stock";
+        appState.stockUpdatedAt[key] = Date.now();
         showToast(`✖ Marked Out of Stock! Student route recommender updated.`);
       }
       broadcastStateUpdate();
@@ -733,9 +759,9 @@
               <div class="item-price">₹${item.price}</div>
             </div>
             <div style="display:flex; gap:6px;">
-              <button onclick="setItemStock(${item.id}, 'In Stock')" style="flex:1; justify-content:center;">🟢 In</button>
-              <button onclick="setItemStock(${item.id}, 'Low Stock')" style="flex:1; justify-content:center;">🟡 Low</button>
-              <button onclick="setItemStock(${item.id}, 'Out of Stock')" style="flex:1; justify-content:center;">🔴 Out</button>
+              <button class="stock-btn-in ${st === 'In Stock' ? 'active-stock' : ''}" onclick="setItemStock(${item.id}, 'In Stock')" style="flex:1; justify-content:center;">🟢 In</button>
+              <button class="stock-btn-low ${st === 'Low Stock' ? 'active-stock' : ''}" onclick="setItemStock(${item.id}, 'Low Stock')" style="flex:1; justify-content:center;">🟡 Low</button>
+              <button class="stock-btn-out ${st === 'Out of Stock' ? 'active-stock' : ''}" onclick="setItemStock(${item.id}, 'Out of Stock')" style="flex:1; justify-content:center;">🔴 Out</button>
             </div>
           </div>
         `;
