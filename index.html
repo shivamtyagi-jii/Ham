@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shopkeeper Portal — BhawanPulse IITR</title>
+  <title>Shopkeeper Portal — StallScout IITR</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
     :root {
-      --bg: #f1f5f9;
-      --surface: #ffffff;
+      --bg: #fff7ed;
+      --surface: rgba(255, 255, 255, 0.93);
       --surface-alt: #f8fafc;
       --text: #0f172a;
       --muted: #64748b;
@@ -25,8 +25,8 @@
     }
 
     body.dark {
-      --bg: #090d16;
-      --surface: #111827;
+      --bg: #070b14;
+      --surface: rgba(17, 24, 39, 0.93);
       --surface-alt: #1e293b;
       --text: #f8fafc;
       --muted: #94a3b8;
@@ -37,15 +37,55 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-    body { background: var(--bg); color: var(--text); transition: 0.2s; min-height: 100vh; padding-bottom: 50px; }
+    body {
+      background: var(--bg); color: var(--text); transition: background 0.4s, color 0.2s;
+      min-height: 100vh; padding-bottom: 50px; position: relative; overflow-x: hidden;
+    }
+
+    /* Sky Background: Sun in Day Mode, Moon + Stars in Night Mode */
+    .sky-decor {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .sun-orb {
+      position: fixed; top: 55px; right: 6%;
+      width: 90px; height: 90px; border-radius: 50%;
+      background: radial-gradient(circle, #fde047 0%, #f59e0b 75%);
+      box-shadow: 0 0 60px 20px rgba(250, 204, 21, 0.4);
+      transition: all 0.5s ease;
+      opacity: 0.85;
+    }
+    body.dark .sun-orb { transform: translateY(-180px) scale(0.5); opacity: 0; }
+    .moon-orb {
+      position: fixed; top: 55px; right: 6%;
+      width: 80px; height: 80px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #f8fafc, #cbd5e1 75%);
+      box-shadow: 0 0 50px 12px rgba(148, 163, 184, 0.35);
+      transition: all 0.5s ease;
+      transform: translateY(-180px) scale(0.5); opacity: 0;
+    }
+    body.dark .moon-orb { transform: translateY(0) scale(1); opacity: 0.9; }
+    .stars-layer {
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(2px 2px at 18% 22%, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 42% 14%, #e2e8f0, transparent),
+        radial-gradient(2px 2px at 70% 28%, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 85% 38%, #cbd5e1, transparent);
+      opacity: 0; transition: opacity 0.5s ease;
+    }
+    body.dark .stars-layer { opacity: 0.55; }
+
+    .navbar, .login-container, .container { position: relative; z-index: 2; }
 
     .navbar {
-      background: var(--surface); border-bottom: 1px solid var(--border);
+      background: var(--surface); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
       padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;
       position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); flex-wrap: wrap; gap: 10px;
     }
-    .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.2rem; color: var(--primary); }
-    .brand span { font-size: 0.72rem; background: var(--primary); color: #fff; padding: 3px 8px; border-radius: 99px; }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.25rem; color: var(--primary); }
+    .brand span { font-size: 0.72rem; background: var(--primary); color: #fff; padding: 3px 9px; border-radius: 99px; }
 
     .nav-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     button, select.nav-select {
@@ -58,7 +98,6 @@
     .btn-success { background: var(--green); color: #fff; border-color: var(--green); }
     .btn-danger { background: var(--red); color: #fff; border-color: var(--red); }
 
-    /* Live Sound Toast Notification */
     .toast-alert {
       position: fixed; bottom: 24px; right: 24px; z-index: 999;
       background: var(--surface); border-left: 6px solid var(--primary);
@@ -72,7 +111,7 @@
     }
 
     .login-container {
-      max-width: 430px; margin: 50px auto; background: var(--surface);
+      max-width: 420px; margin: 55px auto; background: var(--surface); backdrop-filter: blur(12px);
       border: 1px solid var(--border); border-radius: 16px; padding: 26px; box-shadow: var(--shadow);
     }
     .input-group { margin-bottom: 14px; }
@@ -120,7 +159,14 @@
     .badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
     .badge-red { background: var(--red-bg); color: var(--red); }
 
-    .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+    .category-pills {
+      display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px;
+    }
+    .category-pills button.active {
+      background: var(--primary); color: #fff; border-color: var(--primary);
+    }
+
+    .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
     .item-card {
       background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
       padding: 16px; display: flex; flex-direction: column; justify-content: space-between;
@@ -134,31 +180,33 @@
 </head>
 <body>
 
-  <!-- Floating Visual + Sound Notification Toast -->
+  <!-- Animated Day Sun & Night Moon Sky Background -->
+  <div class="sky-decor">
+    <div class="sun-orb"></div>
+    <div class="moon-orb"></div>
+    <div class="stars-layer"></div>
+  </div>
+
+  <!-- Live Toast Notification -->
   <div id="liveToast" class="toast-alert hidden"></div>
 
   <nav class="navbar">
-    <div class="brand">🏪 BhawanPulse <span>SHOPKEEPER LAPTOP</span></div>
+    <div class="brand">🏪 StallScout <span>SHOPKEEPER PORTAL</span></div>
     <div class="nav-controls">
-      <span id="cloudStatusBadge" class="badge badge-yellow">☁️ Connecting...</span>
-      <button onclick="playShopkeeperOrderBell(); showToast('🔔 Shopkeeper Order Bell Tested!')">
-        🔊 Test Order Bell
+      <button id="completedDrawerBtn" class="hidden" onclick="toggleCompletedDrawer()">
+        ✅ Completed / Picked Up (<span id="completedCount">0</span>)
       </button>
-      <button onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
-      <button id="logoutBtn" class="hidden" onclick="logout()">🚪 Switch Shop / Logout</button>
+      <button onclick="toggleTheme()" id="themeBtn">🌙 Night</button>
+      <button id="logoutBtn" class="hidden" onclick="logout()">🚪 Switch Stall / Logout</button>
     </div>
   </nav>
 
   <!-- SHOPKEEPER LOGIN -->
   <div id="loginBox" class="login-container">
-    <h2 style="margin-bottom: 6px;">🏪 Shopkeeper Login</h2>
+    <h2 style="margin-bottom: 6px;">🏪 StallScout Shopkeeper</h2>
     <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">
-      Rings a loud <b>Ding-Dong!</b> bell ONLY when an order arrives for your selected <b>Bhawan + Shop Type</b>!
+      Manage live stock and incoming student orders for your specific <b>Bhawan & Stall</b>.
     </p>
-    <div class="input-group">
-      <label>Multi-Laptop Sync Room Code</label>
-      <input type="text" id="roomCodeInput" value="IITR-SYNTAX-ERROR-2026" style="font-weight:700; color:var(--primary);" />
-    </div>
     <div class="input-group">
       <label>1. Select Your Bhawan</label>
       <select id="ownBhawan">
@@ -172,10 +220,11 @@
       </select>
     </div>
     <div class="input-group">
-      <label>2. Select Your Shop Type</label>
+      <label>2. Select Your Stall Type</label>
       <select id="ownShopType">
-        <option value="General Shop">🛒 General Shop (9 AM – 9 PM)</option>
-        <option value="Day Canteen">☀️ Day Canteen (10 AM – 10 PM)</option>
+        <option value="Stationery Shop">📚 Stationery Shop (9 AM – 9 PM)</option>
+        <option value="Fruit & Juice Corner">🍹 Fruit & Juice Corner (9 AM – 10 PM)</option>
+        <option value="Day Canteen">☀️ Day Canteen (8 AM – 10 PM)</option>
         <option value="Night Canteen">🌙 Night Canteen (10 PM – 2 AM)</option>
       </select>
     </div>
@@ -184,7 +233,7 @@
       <input type="password" id="ownPin" value="1234" />
     </div>
     <button class="btn-primary" style="width:100%; justify-content:center; padding:12px;" onclick="loginOwner()">
-      Open My Shop Dashboard (Enable Bell)
+      Open Stall Dashboard
     </button>
   </div>
 
@@ -194,11 +243,10 @@
     <!-- Quick Switcher Bar -->
     <div class="shop-identity-bar">
       <div>
-        <span style="font-size:0.78rem; color:var(--muted); font-weight:700;">LOGGED IN AS SHOP OWNER OF:</span>
-        <h2 id="activeOwnerHeader" style="color:var(--primary); font-size:1.25rem;"></h2>
+        <span style="font-size:0.75rem; color:var(--muted); font-weight:700;">MANAGING STALL:</span>
+        <h2 id="activeOwnerHeader" style="color:var(--primary); font-size:1.22rem;"></h2>
       </div>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <span style="font-size:0.78rem; color:var(--muted);">Quick Demo Switch:</span>
         <select id="quickBhawanSwitch" class="nav-select" onchange="selectedBhawan=this.value; renderOwner();">
           <option value="Rajendra Bhawan (RJB)">Rajendra Bhawan (RJB)</option>
           <option value="Rajiv Bhawan">Rajiv Bhawan</option>
@@ -208,59 +256,66 @@
           <option value="Sarojini Bhawan">Sarojini Bhawan</option>
           <option value="Jawahar Bhawan">Jawahar Bhawan</option>
         </select>
-        <select id="quickShopSwitch" class="nav-select" onchange="selectedShop=this.value; renderOwner();">
-          <option value="General Shop">🛒 General Shop</option>
+        <select id="quickShopSwitch" class="nav-select" onchange="selectedShop=this.value; selectedCategory='All'; renderOwner();">
+          <option value="Stationery Shop">📚 Stationery Shop</option>
+          <option value="Fruit & Juice Corner">🍹 Fruit & Juice Corner</option>
           <option value="Day Canteen">☀️ Day Canteen</option>
           <option value="Night Canteen">🌙 Night Canteen</option>
         </select>
       </div>
     </div>
 
-    <!-- ISOLATED INCOMING ORDERS FOR THIS SPECIFIC BHAWAN + SHOP ONLY -->
+    <!-- Collapsible Completed / Picked-Up Orders Drawer (Keeps Main Queue Compact!) -->
+    <div id="completedDrawer" class="status-banner hidden" style="display:block;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>✅ Completed & Picked-Up Orders</h3>
+        <button onclick="toggleCompletedDrawer()">✖ Hide</button>
+      </div>
+      <div id="completedOrdersList" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- ACTIVE INCOMING & READY ORDERS ONLY (#18) -->
     <div id="ordersPanelBox" class="panel-box">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <div>
-          <h3 style="font-size:1.12rem;" id="ordersBoxTitle">🔔 Incoming Orders for This Shop Only</h3>
-          <p style="font-size:0.82rem; color:var(--muted);">
-            Rings a loud bell when a student reserves an item at <b>this specific Bhawan & Shop</b>.
+          <h3 style="font-size:1.1rem;" id="ordersBoxTitle">🔔 Active Orders Queue</h3>
+          <p style="font-size:0.8rem; color:var(--muted);">
+            Once an order is picked up by the student, click <b>"📦 Picked Up (Clear)"</b> to keep this dashboard clean.
           </p>
         </div>
-        <span id="pendingBadge" class="badge badge-red">0 Pending</span>
+        <span id="pendingBadge" class="badge badge-red">0 Active</span>
       </div>
       <div id="incomingOrdersList"></div>
     </div>
 
-    <!-- Master Crowd Control for THIS Shop -->
+    <!-- Master Crowd Control -->
     <div class="status-banner">
       <div>
-        <h3 id="ownerShopTitle" style="font-size:1.08rem;"></h3>
-        <p style="font-size:0.8rem; color:var(--muted);">Stock changes below only affect this specific Bhawan & Shop.</p>
+        <h3 id="ownerShopTitle" style="font-size:1.05rem;"></h3>
+        <p style="font-size:0.78rem; color:var(--muted);">Stock & crowd updates sync immediately to student route calculators.</p>
       </div>
       <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-        <span style="font-size:0.8rem; color:var(--muted);">My Shop Crowd:</span>
         <span id="crowdBadge" class="badge badge-green"></span>
-        <button onclick="setCrowd('Normal')">🟢 Set Normal</button>
-        <button onclick="setCrowd('Crowded')">🔴 Set Heavy Crowd</button>
+        <button onclick="setCrowd('Normal')">🟢 Normal Queue (~2m)</button>
+        <button onclick="setCrowd('Crowded')">🔴 Heavy Queue (~12m)</button>
       </div>
     </div>
+
+    <!-- Category Pills -->
+    <div id="ownerCategoryPills" class="category-pills"></div>
 
     <!-- Stock Control Grid -->
     <div id="ownerGrid" class="items-grid"></div>
   </div>
 
   <script>
-    // --- WEB AUDIO SYNTHESIZER (Loud Shopkeeper Order Bell!) ---
+    // --- WEB AUDIO SYNTHESIZER ---
     let audioCtx = null;
     function unlockAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
     }
 
-    // Loud Double "Ding-Dong! Ding-Dong!" Bell for Incoming Shopkeeper Orders
     function playShopkeeperOrderBell() {
       unlockAudio();
       const now = audioCtx.currentTime;
@@ -275,12 +330,10 @@
         const gain = audioCtx.createGain();
         osc.type = "triangle";
         osc.frequency.setValueAtTime(n.freq, now + n.start);
-        gain.gain.setValueAtTime(0.35, now + n.start);
+        gain.gain.setValueAtTime(0.32, now + n.start);
         gain.gain.exponentialRampToValueAtTime(0.001, now + n.start + n.dur);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now + n.start);
-        osc.stop(now + n.start + n.dur + 0.02);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now + n.start); osc.stop(now + n.start + n.dur + 0.02);
       });
     }
 
@@ -293,26 +346,89 @@
       toastTimer = setTimeout(() => box.classList.add("hidden"), 5000);
     }
 
+    // --- COMPLETE EXCEL CATALOG ---
     const BASE_CATALOG = [
-      { id: 1, shop: "General Shop", category: "Stationery", name: "Practical File / Lab Manual", price: 65, defaultStatus: "In Stock" },
-      { id: 2, shop: "General Shop", category: "Stationery", name: "A4 Assignment Sheets (50 Pack)", price: 45, defaultStatus: "In Stock" },
-      { id: 3, shop: "General Shop", category: "Service", name: "Instant B&W Printout / Xerox", price: 2, defaultStatus: "In Stock" },
-      { id: 4, shop: "General Shop", category: "Engineering", name: "Mini Drafter & Graph Sheet Set", price: 180, defaultStatus: "Low Stock" },
-      { id: 5, shop: "General Shop", category: "Dairy", name: "Amul Gold Tetra Milk (1 Litre)", price: 72, defaultStatus: "In Stock" },
-      { id: 6, shop: "General Shop", category: "Hostel Need", name: "Maggi 4-Pack (For Room Kettle)", price: 56, defaultStatus: "In Stock" },
-      { id: 7, shop: "Day Canteen", category: "Hot Snack", name: "Baked Aloo Patties", price: 20, defaultStatus: "In Stock" },
-      { id: 8, shop: "Day Canteen", category: "Beverage", name: "Thick Cold Coffee", price: 35, defaultStatus: "In Stock" },
-      { id: 9, shop: "Day Canteen", category: "Hot Snack", name: "Crispy Samosa (2 Pcs) + Chhole", price: 30, defaultStatus: "Low Stock" },
-      { id: 10, shop: "Day Canteen", category: "Beverage", name: "Fresh Nimbu Masala Soda", price: 20, defaultStatus: "In Stock" },
-      { id: 11, shop: "Night Canteen", category: "Exam Staple", name: "Double Masala Cheese Maggi", price: 40, defaultStatus: "In Stock" },
-      { id: 12, shop: "Night Canteen", category: "Protein", name: "Double Egg Bread Omelette", price: 35, defaultStatus: "In Stock" },
-      { id: 13, shop: "Night Canteen", category: "Beverage", name: "Hot Kulhad Adrak Chai", price: 15, defaultStatus: "In Stock" },
-      { id: 14, shop: "Night Canteen", category: "Tandoor", name: "Aloo Pyaaz Paratha with Curd", price: 35, defaultStatus: "In Stock" }
+      // 1. Stationery Shop (from statioanary.xlsx)
+      { id: 101, shop: "Stationery Shop", category: "Stationery", name: "Pencil", price: 5, defaultStatus: "In Stock" },
+      { id: 102, shop: "Stationery Shop", category: "Stationery", name: "Pen", price: 10, defaultStatus: "In Stock" },
+      { id: 103, shop: "Stationery Shop", category: "Stationery", name: "Register Ruled", price: 60, defaultStatus: "In Stock" },
+      { id: 104, shop: "Stationery Shop", category: "Stationery", name: "Register Plain", price: 55, defaultStatus: "In Stock" },
+      { id: 105, shop: "Stationery Shop", category: "Daily Essentials", name: "Soap", price: 35, defaultStatus: "In Stock" },
+      { id: 106, shop: "Stationery Shop", category: "Daily Essentials", name: "Detergent", price: 20, defaultStatus: "In Stock" },
+      { id: 107, shop: "Stationery Shop", category: "Daily Essentials", name: "Toothbrush", price: 25, defaultStatus: "In Stock" },
+      { id: 108, shop: "Stationery Shop", category: "Daily Essentials", name: "Toothpaste", price: 50, defaultStatus: "In Stock" },
+      { id: 109, shop: "Stationery Shop", category: "Sports", name: "Shuttle", price: 80, defaultStatus: "Low Stock" },
+      { id: 110, shop: "Stationery Shop", category: "Service", name: "Zerox / Printout", price: 2, defaultStatus: "In Stock" },
+      { id: 111, shop: "Stationery Shop", category: "Stationery", name: "A4 Plain Sheet (Pack)", price: 45, defaultStatus: "In Stock" },
+      { id: 112, shop: "Stationery Shop", category: "Stationery", name: "Practical File", price: 65, defaultStatus: "In Stock" },
+      { id: 113, shop: "Stationery Shop", category: "Stationery", name: "Graph Paper", price: 20, defaultStatus: "In Stock" },
+      { id: 114, shop: "Stationery Shop", category: "Daily Essentials", name: "Water Bottle", price: 20, defaultStatus: "In Stock" },
+
+      // 2. Fruit & Juice Corner (from fruitshop.xlsx)
+      { id: 201, shop: "Fruit & Juice Corner", category: "Fruit", name: "Fruit Chaat", price: 40, defaultStatus: "In Stock" },
+      { id: 202, shop: "Fruit & Juice Corner", category: "Fruit", name: "Apple (Market Price)", price: 30, defaultStatus: "In Stock" },
+      { id: 203, shop: "Fruit & Juice Corner", category: "Fruit", name: "Banana", price: 10, defaultStatus: "In Stock" },
+      { id: 204, shop: "Fruit & Juice Corner", category: "Fruit", name: "Pineapple", price: 40, defaultStatus: "In Stock" },
+      { id: 205, shop: "Fruit & Juice Corner", category: "Shake", name: "Oreo Shake", price: 50, defaultStatus: "In Stock" },
+      { id: 206, shop: "Fruit & Juice Corner", category: "Shake", name: "Chocolate Shake", price: 50, defaultStatus: "In Stock" },
+      { id: 207, shop: "Fruit & Juice Corner", category: "Shake", name: "Cold Coffee", price: 35, defaultStatus: "In Stock" },
+      { id: 208, shop: "Fruit & Juice Corner", category: "Shake", name: "Banana Shake", price: 40, defaultStatus: "In Stock" },
+      { id: 209, shop: "Fruit & Juice Corner", category: "Shake", name: "Strawberry Shake", price: 50, defaultStatus: "Low Stock" },
+      { id: 210, shop: "Fruit & Juice Corner", category: "Juice", name: "Mosambi Juice", price: 40, defaultStatus: "In Stock" },
+      { id: 211, shop: "Fruit & Juice Corner", category: "Juice", name: "Coconut Water", price: 50, defaultStatus: "In Stock" },
+      { id: 212, shop: "Fruit & Juice Corner", category: "Juice", name: "Mixed Juice", price: 45, defaultStatus: "In Stock" },
+      { id: 213, shop: "Fruit & Juice Corner", category: "Juice", name: "Lemon Shikanji", price: 20, defaultStatus: "In Stock" },
+
+      // 3. Day Canteen (from price list.xlsx)
+      { id: 301, shop: "Day Canteen", category: "Paratha", name: "Plain Paratha", price: 10, defaultStatus: "In Stock" },
+      { id: 302, shop: "Day Canteen", category: "Paratha", name: "Aloo Paratha", price: 15, defaultStatus: "In Stock" },
+      { id: 303, shop: "Day Canteen", category: "Paratha", name: "Paneer Paratha", price: 20, defaultStatus: "In Stock" },
+      { id: 304, shop: "Day Canteen", category: "Fries & Snacks", name: "Samosa", price: 10, defaultStatus: "In Stock" },
+      { id: 305, shop: "Day Canteen", category: "Fries & Snacks", name: "French Fries", price: 30, defaultStatus: "In Stock" },
+      { id: 306, shop: "Day Canteen", category: "Fries & Snacks", name: "Patties", price: 25, defaultStatus: "In Stock" },
+      { id: 307, shop: "Day Canteen", category: "Fries & Snacks", name: "Poha", price: 30, defaultStatus: "In Stock" },
+      { id: 308, shop: "Day Canteen", category: "Continental", name: "Fry Noodles", price: 30, defaultStatus: "In Stock" },
+      { id: 309, shop: "Day Canteen", category: "Continental", name: "Cheese Pasta", price: 30, defaultStatus: "In Stock" },
+      { id: 310, shop: "Day Canteen", category: "Continental", name: "Veg Momos", price: 50, defaultStatus: "In Stock" },
+      { id: 311, shop: "Day Canteen", category: "Continental", name: "Veg Spring Rolls", price: 50, defaultStatus: "Low Stock" },
+      { id: 312, shop: "Day Canteen", category: "Egg", name: "Egg Burger", price: 50, defaultStatus: "In Stock" },
+      { id: 313, shop: "Day Canteen", category: "Egg", name: "Plain Omelette", price: 15, defaultStatus: "In Stock" },
+      { id: 314, shop: "Day Canteen", category: "Egg", name: "Bread Omelette", price: 25, defaultStatus: "In Stock" },
+      { id: 315, shop: "Day Canteen", category: "Meals", name: "Plain Chapati", price: 10, defaultStatus: "In Stock" },
+      { id: 316, shop: "Day Canteen", category: "Meals", name: "Butter Chapati", price: 15, defaultStatus: "In Stock" },
+      { id: 317, shop: "Day Canteen", category: "Meals", name: "Pav Bhaji", price: 50, defaultStatus: "In Stock" },
+      { id: 318, shop: "Day Canteen", category: "Meals", name: "Shahi Paneer", price: 150, defaultStatus: "In Stock" },
+      { id: 319, shop: "Day Canteen", category: "Bread & Toast", name: "Bread Butter", price: 15, defaultStatus: "In Stock" },
+      { id: 320, shop: "Day Canteen", category: "Bread & Toast", name: "Bun Butter", price: 20, defaultStatus: "In Stock" },
+      { id: 321, shop: "Day Canteen", category: "Bread & Toast", name: "French Toast", price: 30, defaultStatus: "In Stock" },
+
+      // 4. Night Canteen (from price list.xlsx)
+      { id: 401, shop: "Night Canteen", category: "Paratha", name: "Plain Paratha", price: 10, defaultStatus: "In Stock" },
+      { id: 402, shop: "Night Canteen", category: "Paratha", name: "Aloo Paratha", price: 15, defaultStatus: "In Stock" },
+      { id: 403, shop: "Night Canteen", category: "Paratha", name: "Paneer Paratha", price: 20, defaultStatus: "In Stock" },
+      { id: 404, shop: "Night Canteen", category: "Fries & Snacks", name: "Samosa", price: 10, defaultStatus: "In Stock" },
+      { id: 405, shop: "Night Canteen", category: "Fries & Snacks", name: "French Fries", price: 30, defaultStatus: "In Stock" },
+      { id: 406, shop: "Night Canteen", category: "Fries & Snacks", name: "Patties", price: 25, defaultStatus: "In Stock" },
+      { id: 407, shop: "Night Canteen", category: "Fries & Snacks", name: "Poha", price: 30, defaultStatus: "In Stock" },
+      { id: 408, shop: "Night Canteen", category: "Continental", name: "Fry Noodles", price: 30, defaultStatus: "In Stock" },
+      { id: 409, shop: "Night Canteen", category: "Continental", name: "Cheese Pasta", price: 30, defaultStatus: "In Stock" },
+      { id: 410, shop: "Night Canteen", category: "Continental", name: "Veg Momos", price: 50, defaultStatus: "In Stock" },
+      { id: 411, shop: "Night Canteen", category: "Continental", name: "Veg Spring Rolls", price: 50, defaultStatus: "In Stock" },
+      { id: 412, shop: "Night Canteen", category: "Egg", name: "Egg Burger", price: 50, defaultStatus: "In Stock" },
+      { id: 413, shop: "Night Canteen", category: "Egg", name: "Plain Omelette", price: 15, defaultStatus: "In Stock" },
+      { id: 414, shop: "Night Canteen", category: "Egg", name: "Bread Omelette", price: 25, defaultStatus: "In Stock" },
+      { id: 415, shop: "Night Canteen", category: "Meals", name: "Plain Chapati", price: 10, defaultStatus: "In Stock" },
+      { id: 416, shop: "Night Canteen", category: "Meals", name: "Butter Chapati", price: 15, defaultStatus: "In Stock" },
+      { id: 417, shop: "Night Canteen", category: "Meals", name: "Pav Bhaji", price: 50, defaultStatus: "In Stock" },
+      { id: 418, shop: "Night Canteen", category: "Meals", name: "Shahi Paneer", price: 150, defaultStatus: "In Stock" },
+      { id: 419, shop: "Night Canteen", category: "Bread & Toast", name: "Bread Butter", price: 15, defaultStatus: "In Stock" },
+      { id: 420, shop: "Night Canteen", category: "Bread & Toast", name: "Bun Butter", price: 20, defaultStatus: "In Stock" },
+      { id: 421, shop: "Night Canteen", category: "Bread & Toast", name: "French Toast", price: 30, defaultStatus: "In Stock" }
     ];
 
-    const STORAGE_KEY = "BHAWAN_PULSE_ISOLATED_V3";
+    const STORAGE_KEY = "STALL_SCOUT_IITR_V4";
+    const DEFAULT_SYNC_TOPIC = "stallscout/iitr/v4/live";
     let mqttClient = null;
-    let mqttTopic = "bhawanpulse/iitr/v3/IITR-SYNTAX-ERROR-2026";
 
     let appState = {
       stockByBhawanItem: {},
@@ -324,12 +440,12 @@
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) { try { appState = JSON.parse(saved); } catch(e){} }
 
-    // Keep track of seen order IDs so we ONLY ring the bell on brand new orders for THIS shopkeeper!
     let knownOrderIds = new Set((appState.orders || []).map(o => o.orderId));
-
     let ownerLoggedIn = false;
     let selectedBhawan = "Rajendra Bhawan (RJB)";
-    let selectedShop = "General Shop";
+    let selectedShop = "Stationery Shop";
+    let selectedCategory = "All";
+    let showCompleted = false;
 
     function checkAndRingForNewOrders(incomingState) {
       const incomingOrders = incomingState.orders || [];
@@ -338,7 +454,6 @@
       incomingOrders.forEach(o => {
         if (!knownOrderIds.has(o.orderId)) {
           knownOrderIds.add(o.orderId);
-          // Ring ONLY if this order is for THIS Shopkeeper's Bhawan AND Shop Type!
           if (ownerLoggedIn && o.bhawan === selectedBhawan && o.shop === selectedShop) {
             newMatchingOrder = o;
           }
@@ -350,7 +465,7 @@
         showToast(`🔔 NEW ORDER ${newMatchingOrder.orderId}: ${newMatchingOrder.itemName} (₹${newMatchingOrder.price}) by ${newMatchingOrder.studentName}!`);
         const panel = document.getElementById("ordersPanelBox");
         panel.classList.remove("flash-ring");
-        void panel.offsetWidth; // trigger reflow
+        void panel.offsetWidth;
         panel.classList.add("flash-ring");
       }
     }
@@ -365,20 +480,14 @@
       return appState.crowdByShop[key] || "Normal";
     }
 
-    function initCloudSync(roomCode) {
-      mqttTopic = "bhawanpulse/iitr/v3/" + roomCode.trim();
+    function initCloudSync() {
       if (mqttClient) mqttClient.end();
       mqttClient = mqtt.connect("wss://broker.emqx.io:8084/mqtt");
-
       mqttClient.on("connect", () => {
-        const badge = document.getElementById("cloudStatusBadge");
-        badge.className = "badge badge-green";
-        badge.innerText = "☁️ Multi-Laptop Sync LIVE";
-        mqttClient.subscribe(mqttTopic, { qos: 1 });
+        mqttClient.subscribe(DEFAULT_SYNC_TOPIC, { qos: 1 });
       });
-
       mqttClient.on("message", (topic, message) => {
-        if (topic === mqttTopic) {
+        if (topic === DEFAULT_SYNC_TOPIC) {
           try {
             const incoming = JSON.parse(message.toString());
             checkAndRingForNewOrders(incoming);
@@ -394,7 +503,7 @@
       (appState.orders || []).forEach(o => knownOrderIds.add(o.orderId));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       if (mqttClient && mqttClient.connected) {
-        mqttClient.publish(mqttTopic, JSON.stringify(appState), { qos: 1, retain: true });
+        mqttClient.publish(DEFAULT_SYNC_TOPIC, JSON.stringify(appState), { qos: 1, retain: true });
       }
       renderOwner();
     }
@@ -411,13 +520,17 @@
 
     function toggleTheme() {
       document.body.classList.toggle("dark");
-      document.getElementById("themeBtn").innerText = document.body.classList.contains("dark") ? "☀️ Day" : "🌙 Dark";
+      document.getElementById("themeBtn").innerText = document.body.classList.contains("dark") ? "☀️ Day" : "🌙 Night";
+    }
+
+    function toggleCompletedDrawer() {
+      showCompleted = !showCompleted;
+      document.getElementById("completedDrawer").classList.toggle("hidden", !showCompleted);
     }
 
     function loginOwner() {
       unlockAudio();
       const pin = document.getElementById("ownPin").value.trim();
-      const roomCode = document.getElementById("roomCodeInput").value.trim() || "IITR-SYNTAX-ERROR-2026";
       if (pin !== "1234") {
         alert("Invalid PIN! Use 1234 for demo.");
         return;
@@ -426,10 +539,17 @@
       selectedShop = document.getElementById("ownShopType").value;
       ownerLoggedIn = true;
 
-      initCloudSync(roomCode);
+      const h = new Date().getHours();
+      if (h >= 19 || h < 6) {
+        document.body.classList.add("dark");
+        document.getElementById("themeBtn").innerText = "☀️ Day";
+      }
+
+      initCloudSync();
 
       document.getElementById("loginBox").classList.add("hidden");
       document.getElementById("appBox").classList.remove("hidden");
+      document.getElementById("completedDrawerBtn").classList.remove("hidden");
       document.getElementById("logoutBtn").classList.remove("hidden");
       renderOwner();
     }
@@ -438,6 +558,7 @@
       ownerLoggedIn = false;
       document.getElementById("loginBox").classList.remove("hidden");
       document.getElementById("appBox").classList.add("hidden");
+      document.getElementById("completedDrawerBtn").classList.add("hidden");
       document.getElementById("logoutBtn").classList.add("hidden");
     }
 
@@ -456,6 +577,7 @@
       broadcastStateUpdate();
     }
 
+    // Handles Ready, Picked Up (removes from active queue), and Out of Stock (#18)
     function handleOrder(orderId, decision) {
       unlockAudio();
       const order = appState.orders.find(o => o.orderId === orderId);
@@ -463,12 +585,15 @@
 
       if (decision === "ready") {
         order.status = "✅ Ready for Pickup";
-        showToast(`✔ Marked ${orderId} Ready! Student's laptop just chimed.`);
+        showToast(`✔ Order ${orderId} marked Ready! Student notified.`);
+      } else if (decision === "pickedup") {
+        order.status = "📦 Picked Up";
+        showToast(`📦 Order ${orderId} completed & moved to history.`);
       } else {
-        order.status = "❌ Cancelled (Item Out of Stock)";
+        order.status = "❌ Cancelled (Out of Stock)";
         const key = `${order.bhawan}__${order.itemId}`;
         appState.stockByBhawanItem[key] = "Out of Stock";
-        showToast(`✖ Marked Out of Stock! Auto-updated on Student laptops.`);
+        showToast(`✖ Marked Out of Stock! Student route recommender updated.`);
       }
       broadcastStateUpdate();
     }
@@ -479,47 +604,85 @@
       document.getElementById("activeOwnerHeader").innerText = `📍 ${selectedBhawan} — ${selectedShop}`;
       document.getElementById("quickBhawanSwitch").value = selectedBhawan;
       document.getElementById("quickShopSwitch").value = selectedShop;
-      document.getElementById("ordersBoxTitle").innerText = `🔔 Incoming Orders for ${selectedBhawan} (${selectedShop})`;
+      document.getElementById("ordersBoxTitle").innerText = `🔔 Active Orders — ${selectedBhawan} (${selectedShop})`;
       document.getElementById("ownerShopTitle").innerText = `${selectedBhawan} — ${selectedShop} Inventory`;
 
       const currentCrowd = getShopCrowd(selectedBhawan, selectedShop);
       const cBadge = document.getElementById("crowdBadge");
       cBadge.className = `badge ${currentCrowd === 'Normal' ? 'badge-green' : 'badge-red'}`;
-      cBadge.innerText = currentCrowd === "Normal" ? "🟢 Normal" : "🔴 Heavy Crowd";
+      cBadge.innerText = currentCrowd === "Normal" ? "🟢 Normal Queue" : "🔴 Heavy Crowd";
 
       const myShopOrders = appState.orders.filter(
         o => o.bhawan === selectedBhawan && o.shop === selectedShop
       );
-      const pendingCount = myShopOrders.filter(o => o.status === "Pending Shopkeeper Approval").length;
-      document.getElementById("pendingBadge").innerText = `${pendingCount} Pending for ${selectedBhawan.split(' ')[0]}`;
+
+      // Separate Active Orders (Pending or Ready) from Completed/Picked Up/Cancelled (#18)
+      const activeOrders = myShopOrders.filter(
+        o => o.status === "Pending Shopkeeper Approval" || o.status === "✅ Ready for Pickup"
+      );
+      const completedOrders = myShopOrders.filter(
+        o => o.status === "📦 Picked Up" || o.status.includes("Cancelled")
+      );
+
+      document.getElementById("pendingBadge").innerText = `${activeOrders.length} Active`;
+      document.getElementById("completedCount").innerText = completedOrders.length;
 
       const list = document.getElementById("incomingOrdersList");
-      if (myShopOrders.length === 0) {
-        list.innerHTML = `<p style="color:var(--muted); margin-top:10px;">No student orders for <b>${selectedBhawan} (${selectedShop})</b> yet.</p>`;
+      if (activeOrders.length === 0) {
+        list.innerHTML = `<p style="color:var(--muted); margin-top:10px;">No active orders waiting right now.</p>`;
       } else {
-        list.innerHTML = myShopOrders.map(o => {
+        list.innerHTML = activeOrders.map(o => {
           const isPending = o.status === "Pending Shopkeeper Approval";
           return `
             <div class="order-row">
               <div>
                 <strong>${o.orderId} — ${o.itemName} (₹${o.price})</strong>
                 <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">
-                  👤 Student: ${o.studentName} (${o.studentId}) • 🕒 ${o.time}
+                  👤 ${o.studentName} (${o.studentId}) • 🕒 ${o.time}
                 </div>
               </div>
-              <div style="display:flex; gap:8px;">
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 ${isPending ? `
                   <button class="btn-success" onclick="handleOrder('${o.orderId}', 'ready')">✔ Ready for Pickup</button>
-                  <button class="btn-danger" onclick="handleOrder('${o.orderId}', 'reject')">✖ Out of Stock (Auto-Update)</button>
-                ` : `<span class="badge ${o.status.includes('Ready') ? 'badge-green' : 'badge-red'}">${o.status}</span>`}
+                  <button class="btn-danger" onclick="handleOrder('${o.orderId}', 'reject')">✖ Out of Stock</button>
+                ` : `
+                  <span class="badge badge-green">🔔 Ready — Waiting for Student</span>
+                  <button class="btn-primary" onclick="handleOrder('${o.orderId}', 'pickedup')">📦 Picked Up (Clear)</button>
+                `}
               </div>
             </div>
           `;
         }).join("");
       }
 
-      const items = BASE_CATALOG.filter(p => p.shop === selectedShop);
-      document.getElementById("ownerGrid").innerHTML = items.map(item => {
+      // Render Completed Drawer
+      const compList = document.getElementById("completedOrdersList");
+      compList.innerHTML = completedOrders.length === 0
+        ? `<p style="color:var(--muted); font-size:0.82rem;">No completed orders yet.</p>`
+        : completedOrders.map(o => `
+            <div class="order-row">
+              <div>
+                <strong>${o.orderId} — ${o.itemName} (₹${o.price})</strong>
+                <span style="font-size:0.78rem; color:var(--muted); margin-left:6px;">by ${o.studentName} (${o.time})</span>
+              </div>
+              <span class="badge ${o.status.includes('Picked Up') ? 'badge-green' : 'badge-red'}">${o.status}</span>
+            </div>
+          `).join("");
+
+      // Sub-category filter pills for Shopkeeper
+      const shopItems = BASE_CATALOG.filter(p => p.shop === selectedShop);
+      const categories = ["All", ...new Set(shopItems.map(i => i.category))];
+      document.getElementById("ownerCategoryPills").innerHTML = categories.map(cat => `
+        <button class="${selectedCategory === cat ? 'active' : ''}" onclick="selectedCategory='${cat}'; renderOwner();">
+          ${cat}
+        </button>
+      `).join("");
+
+      const visibleItems = selectedCategory === "All"
+        ? shopItems
+        : shopItems.filter(i => i.category === selectedCategory);
+
+      document.getElementById("ownerGrid").innerHTML = visibleItems.map(item => {
         const st = getItemStatus(selectedBhawan, item);
         let bClass = "badge-green";
         if (st === "Low Stock") bClass = "badge-yellow";
