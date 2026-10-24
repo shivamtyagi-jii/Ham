@@ -10,6 +10,8 @@ https://shivamtyagi-jii.github.io/StallScout/student.html
 # Demo Video
 https://youtu.be/iXbppu7W82c
 
+# Presentation
+https://github.com/shivamtyagi-jii/StallScout/blob/main/StallScout_Hackathon_Presentation.pptx
 
 StallScout is a real-time, serverless campus platform that calculates live walking routes and queue wait times to help students skip lines and find in-stock food instantly.
 
