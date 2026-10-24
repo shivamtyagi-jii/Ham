@@ -1,4 +1,5 @@
 # StallScout
+Find the fastest Stall. Order Smarter. Queue Less.
 
 # Shopkeeper Portal
 https://shivamtyagi-jii.github.io/StallScout/
@@ -8,6 +9,7 @@ https://shivamtyagi-jii.github.io/StallScout/student.html
 
 # Demo Video
 https://youtu.be/iXbppu7W82c
+
 
 StallScout is a real-time, serverless campus platform that calculates live walking routes and queue wait times to help students skip lines and find in-stock food instantly.
 
