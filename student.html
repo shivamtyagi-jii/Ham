@@ -8,7 +8,7 @@
   <style>
     :root {
       --bg: #eef6ff;
-      --surface: rgba(255, 255, 255, 0.95);
+      --surface: #ffffff;
       --surface-alt: #f8fafc;
       --text: #0f172a;
       --muted: #64748b;
@@ -26,7 +26,7 @@
 
     body.dark {
       --bg: #070b14;
-      --surface: rgba(17, 24, 39, 0.95);
+      --surface: #111827;
       --surface-alt: #1e293b;
       --text: #f8fafc;
       --muted: #94a3b8;
@@ -37,14 +37,10 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-    body {
-      background: var(--bg); color: var(--text); transition: background 0.3s, color 0.2s;
-      min-height: 100vh; padding-bottom: 60px;
-    }
+    body { background: var(--bg); color: var(--text); transition: background 0.25s, color 0.2s; min-height: 100vh; padding-bottom: 60px; }
 
     .navbar {
-      background: var(--surface); backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
+      background: var(--surface); border-bottom: 1px solid var(--border);
       padding: 12px 22px; display: flex; justify-content: space-between; align-items: center;
       position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); flex-wrap: wrap; gap: 10px;
     }
@@ -69,11 +65,6 @@
       background: var(--surface); border-left: 6px solid var(--primary);
       padding: 15px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
       max-width: 360px; font-size: 0.9rem; font-weight: 600;
-      animation: slideIn 0.25s ease-out;
-    }
-    @keyframes slideIn {
-      from { transform: translateY(30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
     }
 
     .login-container {
@@ -109,44 +100,39 @@
       background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
       padding: 16px 18px; margin-bottom: 20px; box-shadow: var(--shadow);
     }
-    .route-search-bar {
-      display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;
-    }
+    .route-search-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
     .route-search-bar input {
       flex: 1; min-width: 220px; padding: 10px 14px; border-radius: 10px;
       border: 1px solid var(--border); background: var(--surface-alt); color: var(--text); font-size: 0.9rem;
     }
-    .route-results {
-      margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px;
-    }
+    .route-results { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
     .route-card {
       background: var(--surface-alt); border: 1px solid var(--border); border-radius: 12px;
       padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
     }
-    .route-card.best-choice {
-      border: 2px solid var(--green); background: var(--green-bg);
-    }
+    .route-card.best-choice { border: 2px solid var(--green); background: var(--green-bg); }
 
-    .bhawan-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 14px;
-    }
+    .bhawan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 14px; }
     .bhawan-card {
       background: var(--surface); border: 2px solid var(--border); border-radius: 16px;
       padding: 18px; cursor: pointer; transition: 0.2s; box-shadow: var(--shadow);
       display: flex; flex-direction: column; justify-content: space-between; gap: 12px;
     }
-    .bhawan-card:hover {
-      border-color: var(--primary); transform: translateY(-2px);
-    }
+    .bhawan-card:hover { border-color: var(--primary); transform: translateY(-2px); }
 
-    .shop-type-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 12px; margin-bottom: 18px;
-    }
+    .shop-type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 12px; margin-bottom: 18px; }
     .shop-tab-card {
       background: var(--surface); border: 2px solid var(--border); border-radius: 14px;
       padding: 14px; cursor: pointer; transition: 0.2s;
     }
     .shop-tab-card.active { border-color: var(--primary); background: rgba(37, 99, 235, 0.06); }
+    .shop-tab-card.closed-shop { opacity: 0.6; }
+
+    .closed-notice {
+      background: var(--red-bg); border: 1px solid var(--red); color: var(--red);
+      padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-weight: 600;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    }
 
     .status-banner {
       background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
@@ -154,12 +140,8 @@
       align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow);
     }
 
-    .category-pills {
-      display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px;
-    }
-    .category-pills button.active {
-      background: var(--primary); color: #fff; border-color: var(--primary);
-    }
+    .category-pills { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; }
+    .category-pills button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
     .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
     .item-card {
@@ -191,7 +173,6 @@
 </head>
 <body>
 
-  <!-- Live Toast Notification -->
   <div id="liveToast" class="toast-alert hidden"></div>
 
   <nav class="navbar">
@@ -202,12 +183,9 @@
         <button type="button">🏪 Shopkeeper</button>
       </a>
       <button id="gpsBtn" onclick="enableLiveGPS()">📍 Live GPS</button>
-
-      <!-- CART BUTTON -->
       <button id="cartBtn" class="hidden" onclick="toggleCart()" style="border-color:var(--primary); color:var(--primary);">
         🛒 Cart (<span id="cartCount" style="font-weight:800;">0</span>)
       </button>
-
       <button id="historyBtn" class="hidden" onclick="toggleHistory()">
         📜 Orders (<span id="orderCount">0</span>)
       </button>
@@ -249,7 +227,6 @@
 
   <!-- MAIN STUDENT VIEW -->
   <div id="appBox" class="container hidden">
-    <!-- Compact User Bar -->
     <div class="account-strip">
       <div class="user-info">
         <div class="avatar" id="avatarChar">S</div>
@@ -300,7 +277,7 @@
         <div>
           <h3 style="font-size:1rem;">🧭 Smartest Route & Item Finder</h3>
           <p style="font-size:0.78rem; color:var(--muted);">
-            Calculates <b>Real Campus Walk Time (80m/min) + Queue Wait Time</b> to recommend the fastest stall with stock.
+            Calculates <b>Real Campus Walk Time (80m/min) + Queue Wait Time</b> across currently open stalls.
           </p>
         </div>
       </div>
@@ -343,6 +320,11 @@
       <!-- 4 Shop Categories -->
       <div class="shop-type-grid" id="shopTabsGrid"></div>
 
+      <!-- Closed Shop Alert -->
+      <div id="closedBanner" class="closed-notice hidden">
+        <span id="closedBannerText">🔒 This stall is currently CLOSED based on the live system time.</span>
+      </div>
+
       <!-- Crowd Status + Consensus -->
       <div class="status-banner">
         <div>
@@ -367,11 +349,17 @@
 
   <script>
     const CLIENT_ID = "stu_" + Math.random().toString(36).substring(2, 10) + "_" + Date.now();
+    let lastCheckedHour = new Date().getHours();
 
     function updateClockDisplay() {
-      const nowStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const now = new Date();
+      const nowStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       const el = document.getElementById("exactClockBadge");
       if (el) el.innerText = "🕒 " + nowStr;
+      if (now.getHours() !== lastCheckedHour) {
+        lastCheckedHour = now.getHours();
+        if (student) renderAll();
+      }
     }
     setInterval(updateClockDisplay, 1000);
     updateClockDisplay();
@@ -524,22 +512,31 @@
       { id: 421, shop: "Night Canteen", category: "Bread & Toast", name: "French Toast", price: 30, defaultStatus: "In Stock" }
     ];
 
+    // --- EXACT SCHEDULE BY REAL SYSTEM CLOCK ---
+    // Stationery Shop: 9 to 21 (9:00 AM - 9:00 PM)
+    // Fruit & Juice Corner: 9 to 22 (9:00 AM - 10:00 PM)
+    // Day Canteen: 10 to 22 (10:00 AM - 10:00 PM)
+    // Night Canteen: 22 to 10 (10:00 PM - 10:00 AM)
     const SHOP_CONFIG = {
       "Stationery Shop": {
-        icon: "📚", label: "Stationery Shop", hoursText: "9:00 AM – 9:00 PM",
-        desc: "Files, Registers, Zerox, Pens, Shuttle & Daily Needs"
+        icon: "📚", label: "Stationery Shop", hoursText: "09:00 – 21:00 (9 AM – 9 PM)",
+        desc: "Files, Registers, Zerox, Pens, Shuttle & Daily Needs",
+        isOpen: (h) => h >= 9 && h < 21
       },
       "Fruit & Juice Corner": {
-        icon: "🍹", label: "Fruit & Juice Corner", hoursText: "9:00 AM – 10:00 PM",
-        desc: "Fresh Fruits, Fruit Chaat, Shakes, Cold Coffee & Juices"
+        icon: "🍹", label: "Fruit & Juice Corner", hoursText: "09:00 – 22:00 (9 AM – 10 PM)",
+        desc: "Fresh Fruits, Fruit Chaat, Shakes, Cold Coffee & Juices",
+        isOpen: (h) => h >= 9 && h < 22
       },
       "Day Canteen": {
-        icon: "☀️", label: "Day Canteen", hoursText: "8:00 AM – 10:00 PM",
-        desc: "Parathas, Snacks, Continental, Omelettes, Meals & Toast"
+        icon: "☀️", label: "Day Canteen", hoursText: "10:00 – 22:00 (10 AM – 10 PM)",
+        desc: "Parathas, Snacks, Continental, Omelettes, Meals & Toast",
+        isOpen: (h) => h >= 10 && h < 22
       },
       "Night Canteen": {
-        icon: "🌙", label: "Night Canteen", hoursText: "10:00 PM – 2:00 AM",
-        desc: "Late-Night Parathas, Momos, Noodles, Burger & Omelettes"
+        icon: "🌙", label: "Night Canteen", hoursText: "22:00 – 10:00 (10 PM – 10 AM)",
+        desc: "Late-Night Parathas, Momos, Noodles, Burger & Omelettes",
+        isOpen: (h) => h >= 22 || h < 10
       }
     };
 
@@ -586,6 +583,17 @@
       (ordersList || []).forEach(o => { knownOrderStatuses[o.orderId] = o.status; });
     }
     syncKnownOrderStatuses(appState.orders);
+
+    function autoSelectOpenShop() {
+      const h = new Date().getHours();
+      if (SHOP_CONFIG[selectedShop] && SHOP_CONFIG[selectedShop].isOpen(h)) return;
+      for (const key of Object.keys(SHOP_CONFIG)) {
+        if (SHOP_CONFIG[key].isOpen(h)) {
+          selectedShop = key;
+          break;
+        }
+      }
+    }
 
     function mergeIncomingState(incoming) {
       if (!incoming || incoming.senderId === CLIENT_ID) return false;
@@ -726,10 +734,11 @@
     }
 
     function findNearestAlternativeBhawan(itemName, currentBhawan) {
+      const hour = new Date().getHours();
       let candidates = [];
       BHAWANS.forEach(b => {
         if (b === currentBhawan) return;
-        const matchingItems = BASE_CATALOG.filter(i => i.name === itemName);
+        const matchingItems = BASE_CATALOG.filter(i => i.name === itemName && SHOP_CONFIG[i.shop].isOpen(hour));
         matchingItems.forEach(item => {
           const st = getItemStatus(b, item);
           if (st !== "Out of Stock") {
@@ -813,6 +822,7 @@
       document.getElementById("currentOriginSelect").value = bhawan;
       selectedBhawan = null;
 
+      autoSelectOpenShop();
       initCloudSync();
 
       document.getElementById("loginBox").classList.add("hidden");
@@ -844,6 +854,12 @@
       const targetBhawan = customBhawan || selectedBhawan;
       const product = BASE_CATALOG.find(p => p.id === itemId);
       if (!product || !targetBhawan) return;
+
+      const hour = new Date().getHours();
+      if (!SHOP_CONFIG[product.shop].isOpen(hour)) {
+        alert(`Sorry! ${product.shop} is only open during ${SHOP_CONFIG[product.shop].hoursText}.`);
+        return;
+      }
 
       const currentSt = getItemStatus(targetBhawan, product);
       if (currentSt === "Out of Stock") {
@@ -946,6 +962,8 @@
       selectedBhawan = bhawanName;
       if (optionalShop) {
         selectedShop = optionalShop;
+      } else {
+        autoSelectOpenShop();
       }
       selectedCategory = "All";
       renderAll();
@@ -996,6 +1014,7 @@
         return;
       }
 
+      const hour = new Date().getHours();
       const matchedItems = BASE_CATALOG.filter(i =>
         i.name.toLowerCase().includes(query) || i.category.toLowerCase().includes(query)
       );
@@ -1011,8 +1030,9 @@
         if (filterFiveMinWalk && walk.walkMins > 5) return;
 
         matchedItems.forEach(item => {
+          const isOpen = SHOP_CONFIG[item.shop].isOpen(hour);
           const stock = getItemStatus(bhawan, item);
-          if (stock !== "Out of Stock") {
+          if (isOpen && stock !== "Out of Stock") {
             const queueMins = getQueueWaitMins(bhawan, item.shop);
             routes.push({
               bhawan,
@@ -1032,7 +1052,7 @@
       const topRoutes = routes.slice(0, 3);
 
       if (topRoutes.length === 0) {
-        box.innerHTML = `<p style="font-size:0.82rem; color:var(--red);">No stalls currently have "${query}" in stock within your walk filter.</p>`;
+        box.innerHTML = `<p style="font-size:0.82rem; color:var(--red);">No open stalls currently have "${query}" in stock right now.</p>`;
         return;
       }
 
@@ -1059,6 +1079,7 @@
 
     function renderAll() {
       if (!student) return;
+      const hour = new Date().getHours();
 
       document.getElementById("avatarChar").innerText = student.name.charAt(0).toUpperCase();
       document.getElementById("profName").innerText = student.name;
@@ -1091,19 +1112,21 @@
 
         document.getElementById("bhawanDirectoryGrid").innerHTML = filteredBhawans.map(b => {
           const walk = getWalkInfoToBhawan(b);
+          const openShopsCount = Object.keys(SHOP_CONFIG).filter(k => SHOP_CONFIG[k].isOpen(hour)).length;
           return `
             <div class="bhawan-card" onclick="openBhawan('${b}')">
               <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
                   <span class="badge badge-green">${walk.label}</span>
-                  <span class="badge badge-green">🟢 4 Stalls Active</span>
+                  <span class="badge ${openShopsCount > 0 ? 'badge-green' : 'badge-red'}">${openShopsCount}/4 Stalls Open</span>
                 </div>
                 <h3 style="font-size:1.12rem; margin-top:10px;">🏢 ${b}</h3>
                 <p style="font-size:0.76rem; color:var(--muted); margin-top:2px;">
                   📍 ${BHAWAN_COORDS[b].area}
                 </p>
                 <p style="font-size:0.79rem; color:var(--muted); margin-top:6px;">
-                  📚 Stationery • 🍹 Fruit & Juice • ☀️ Day & 🌙 Night Canteen
+                  📚 Stationery (9–21) • 🍹 Fruit (9–22)<br/>
+                  ☀️ Day (10–22) • 🌙 Night (22–10)
                 </p>
               </div>
               <button class="btn-primary" style="width:100%; justify-content:center;">
@@ -1122,18 +1145,29 @@
 
         document.getElementById("shopTabsGrid").innerHTML = Object.keys(SHOP_CONFIG).map(key => {
           const cfg = SHOP_CONFIG[key];
+          const openNow = cfg.isOpen(hour);
           return `
-            <div class="shop-tab-card ${selectedShop === key ? 'active' : ''}"
+            <div class="shop-tab-card ${selectedShop === key ? 'active' : ''} ${!openNow ? 'closed-shop' : ''}"
                  onclick="selectedShop='${key}'; selectedCategory='All'; renderAll();">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <h4>${cfg.icon} ${cfg.label}</h4>
-                <span class="badge badge-green">🟢 ACTIVE</span>
+                <span class="badge ${openNow ? 'badge-green' : 'badge-red'}">
+                  ${openNow ? '🟢 OPEN NOW' : '🔒 CLOSED'}
+                </span>
               </div>
               <p style="font-size:0.78rem; font-weight:700;">🕒 ${cfg.hoursText}</p>
               <p style="font-size:0.74rem; color:var(--muted); margin-top:2px;">${cfg.desc}</p>
             </div>
           `;
         }).join("");
+
+        const isSelectedShopOpen = SHOP_CONFIG[selectedShop].isOpen(hour);
+        const closedBanner = document.getElementById("closedBanner");
+        closedBanner.classList.toggle("hidden", isSelectedShopOpen);
+        if (!isSelectedShopOpen) {
+          document.getElementById("closedBannerText").innerText =
+            `🔒 ${selectedBhawan} — ${selectedShop} is currently CLOSED (Operating Hours: ${SHOP_CONFIG[selectedShop].hoursText}).`;
+        }
 
         const currentCrowd = getShopCrowd(selectedBhawan, selectedShop);
         const qMins = getQueueWaitMins(selectedBhawan, selectedShop);
@@ -1164,7 +1198,9 @@
           if (st === "Out of Stock") bClass = "badge-red";
 
           let actionHTML = "";
-          if (st === "Out of Stock") {
+          if (!isSelectedShopOpen) {
+            actionHTML = `<button disabled style="width:100%; justify-content:center; opacity:0.5; cursor:not-allowed;">🔒 Shop Closed (${SHOP_CONFIG[selectedShop].hoursText.split(' ')[0]})</button>`;
+          } else if (st === "Out of Stock") {
             const alt = findNearestAlternativeBhawan(item.name, selectedBhawan);
             if (alt) {
               actionHTML = `
