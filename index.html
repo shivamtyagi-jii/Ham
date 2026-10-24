@@ -111,7 +111,7 @@
     }
 
     .login-container {
-      max-width: 420px; margin: 55px auto; background: var(--surface); backdrop-filter: blur(12px);
+      max-width: 440px; margin: 50px auto; background: var(--surface); backdrop-filter: blur(12px);
       border: 1px solid var(--border); border-radius: 16px; padding: 26px; box-shadow: var(--shadow);
     }
     .input-group { margin-bottom: 14px; }
@@ -193,23 +193,26 @@
   <nav class="navbar">
     <div class="brand">🏪 StallScout <span>SHOPKEEPER PORTAL</span></div>
     <div class="nav-controls">
+      <a href="student.html" style="text-decoration:none;">
+        <button type="button">🎓 Student Portal</button>
+      </a>
       <button id="completedDrawerBtn" class="hidden" onclick="toggleCompletedDrawer()">
-        ✅ Completed / Picked Up (<span id="completedCount">0</span>)
+        ✅ Completed Orders (<span id="completedCount">0</span>)
       </button>
       <button onclick="toggleTheme()" id="themeBtn">🌙 Night</button>
-      <button id="logoutBtn" class="hidden" onclick="logout()">🚪 Switch Stall / Logout</button>
+      <button id="logoutBtn" class="hidden" onclick="logout()">🚪 Logout</button>
     </div>
   </nav>
 
-  <!-- SHOPKEEPER LOGIN -->
+  <!-- SHOPKEEPER LOGIN (Unique Access Per Stall) -->
   <div id="loginBox" class="login-container">
-    <h2 style="margin-bottom: 6px;">🏪 StallScout Shopkeeper</h2>
-    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">
-      Manage live stock and incoming student orders for your specific <b>Bhawan & Stall</b>.
+    <h2 style="margin-bottom: 6px;">🏪 Shopkeeper Exclusive Login</h2>
+    <p style="color: var(--muted); font-size: 0.84rem; margin-bottom: 16px;">
+      Each stall has a unique license passcode. Once logged in, you can <b>only</b> access and manage your own stall.
     </p>
     <div class="input-group">
-      <label>1. Select Your Bhawan</label>
-      <select id="ownBhawan">
+      <label>1. Your Assigned Bhawan</label>
+      <select id="ownBhawan" onchange="updatePasscodeHint()">
         <option value="Rajendra Bhawan (RJB)">Rajendra Bhawan (RJB)</option>
         <option value="Rajiv Bhawan">Rajiv Bhawan</option>
         <option value="Ravindra Bhawan">Ravindra Bhawan</option>
@@ -220,8 +223,8 @@
       </select>
     </div>
     <div class="input-group">
-      <label>2. Select Your Stall Type</label>
-      <select id="ownShopType">
+      <label>2. Your Assigned Stall Type</label>
+      <select id="ownShopType" onchange="updatePasscodeHint()">
         <option value="Stationery Shop">📚 Stationery Shop (9 AM – 9 PM)</option>
         <option value="Fruit & Juice Corner">🍹 Fruit & Juice Corner (9 AM – 10 PM)</option>
         <option value="Day Canteen">☀️ Day Canteen (8 AM – 10 PM)</option>
@@ -229,43 +232,30 @@
       </select>
     </div>
     <div class="input-group">
-      <label>Shopkeeper 4-Digit PIN (Demo: 1234)</label>
-      <input type="password" id="ownPin" value="1234" />
+      <label>3. Unique Stall Passcode</label>
+      <input type="password" id="ownPin" placeholder="Enter your stall's secret passcode" />
+      <div id="passcodeHintBox" style="font-size:0.75rem; color:var(--muted); margin-top:6px;"></div>
     </div>
     <button class="btn-primary" style="width:100%; justify-content:center; padding:12px;" onclick="loginOwner()">
-      Open Stall Dashboard
+      🔒 Verify & Open My Stall Dashboard
     </button>
   </div>
 
-  <!-- SHOPKEEPER MAIN DASHBOARD -->
+  <!-- SHOPKEEPER MAIN DASHBOARD (Strictly Locked to 1 Bhawan & 1 Stall) -->
   <div id="appBox" class="container hidden">
 
-    <!-- Quick Switcher Bar -->
+    <!-- Locked Stall Identity Header (No Switcher Dropdowns!) -->
     <div class="shop-identity-bar">
       <div>
-        <span style="font-size:0.75rem; color:var(--muted); font-weight:700;">MANAGING STALL:</span>
-        <h2 id="activeOwnerHeader" style="color:var(--primary); font-size:1.22rem;"></h2>
+        <span style="font-size:0.74rem; color:var(--muted); font-weight:700;">🔒 VERIFIED SINGLE-STALL SESSION (LOCKED):</span>
+        <h2 id="activeOwnerHeader" style="color:var(--primary); font-size:1.22rem; margin-top:2px;"></h2>
       </div>
-      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <select id="quickBhawanSwitch" class="nav-select" onchange="selectedBhawan=this.value; renderOwner();">
-          <option value="Rajendra Bhawan (RJB)">Rajendra Bhawan (RJB)</option>
-          <option value="Rajiv Bhawan">Rajiv Bhawan</option>
-          <option value="Ravindra Bhawan">Ravindra Bhawan</option>
-          <option value="Cautley Bhawan">Cautley Bhawan</option>
-          <option value="Govind Bhawan">Govind Bhawan</option>
-          <option value="Sarojini Bhawan">Sarojini Bhawan</option>
-          <option value="Jawahar Bhawan">Jawahar Bhawan</option>
-        </select>
-        <select id="quickShopSwitch" class="nav-select" onchange="selectedShop=this.value; selectedCategory='All'; renderOwner();">
-          <option value="Stationery Shop">📚 Stationery Shop</option>
-          <option value="Fruit & Juice Corner">🍹 Fruit & Juice Corner</option>
-          <option value="Day Canteen">☀️ Day Canteen</option>
-          <option value="Night Canteen">🌙 Night Canteen</option>
-        </select>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span id="stallLicenseBadge" class="badge badge-green"></span>
       </div>
     </div>
 
-    <!-- Collapsible Completed / Picked-Up Orders Drawer (Keeps Main Queue Compact!) -->
+    <!-- Collapsible Completed / Picked-Up Orders Drawer -->
     <div id="completedDrawer" class="status-banner hidden" style="display:block;">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <h3>✅ Completed & Picked-Up Orders</h3>
@@ -274,7 +264,7 @@
       <div id="completedOrdersList" style="margin-top:8px;"></div>
     </div>
 
-    <!-- ACTIVE INCOMING & READY ORDERS ONLY (#18) -->
+    <!-- ACTIVE INCOMING & READY ORDERS ONLY -->
     <div id="ordersPanelBox" class="panel-box">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
         <div>
@@ -292,7 +282,7 @@
     <div class="status-banner">
       <div>
         <h3 id="ownerShopTitle" style="font-size:1.05rem;"></h3>
-        <p style="font-size:0.78rem; color:var(--muted);">Stock & crowd updates sync immediately to student route calculators.</p>
+        <p style="font-size:0.78rem; color:var(--muted);">Stock & crowd updates only apply to your verified stall.</p>
       </div>
       <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
         <span id="crowdBadge" class="badge badge-green"></span>
@@ -344,6 +334,37 @@
       box.classList.remove("hidden");
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => box.classList.add("hidden"), 5000);
+    }
+
+    // --- UNIQUE PASSCODE GENERATOR PER BHAWAN + STALL (1 Shopkeeper = 1 Stall Access Only) ---
+    const BHAWAN_CODE_MAP = {
+      "Rajendra Bhawan (RJB)": "RJB",
+      "Rajiv Bhawan": "RAJIV",
+      "Ravindra Bhawan": "RAVI",
+      "Cautley Bhawan": "CAUT",
+      "Govind Bhawan": "GOV",
+      "Sarojini Bhawan": "SARO",
+      "Jawahar Bhawan": "JAW"
+    };
+
+    const SHOP_CODE_MAP = {
+      "Stationery Shop": "STAT",
+      "Fruit & Juice Corner": "FRUIT",
+      "Day Canteen": "DAY",
+      "Night Canteen": "NIGHT"
+    };
+
+    function getExpectedPasscode(bhawan, shop) {
+      return `${BHAWAN_CODE_MAP[bhawan]}-${SHOP_CODE_MAP[shop]}`;
+    }
+
+    function updatePasscodeHint() {
+      const b = document.getElementById("ownBhawan").value;
+      const s = document.getElementById("ownShopType").value;
+      const code = getExpectedPasscode(b, s);
+      document.getElementById("ownPin").value = code;
+      document.getElementById("passcodeHintBox").innerHTML =
+        `🔑 Unique Stall Passcode for <b>${b.split(' ')[0]} ${s}</b>: <code>${code}</code> (Auto-filled for Hackathon Demo)`;
     }
 
     // --- COMPLETE EXCEL CATALOG ---
@@ -442,10 +463,13 @@
 
     let knownOrderIds = new Set((appState.orders || []).map(o => o.orderId));
     let ownerLoggedIn = false;
-    let selectedBhawan = "Rajendra Bhawan (RJB)";
-    let selectedShop = "Stationery Shop";
+    let lockedBhawan = null; // Strictly locked after login
+    let lockedShop = null;   // Strictly locked after login
     let selectedCategory = "All";
     let showCompleted = false;
+
+    // Initialize Passcode Hint on Load
+    updatePasscodeHint();
 
     function checkAndRingForNewOrders(incomingState) {
       const incomingOrders = incomingState.orders || [];
@@ -454,7 +478,7 @@
       incomingOrders.forEach(o => {
         if (!knownOrderIds.has(o.orderId)) {
           knownOrderIds.add(o.orderId);
-          if (ownerLoggedIn && o.bhawan === selectedBhawan && o.shop === selectedShop) {
+          if (ownerLoggedIn && o.bhawan === lockedBhawan && o.shop === lockedShop) {
             newMatchingOrder = o;
           }
         }
@@ -530,14 +554,21 @@
 
     function loginOwner() {
       unlockAudio();
-      const pin = document.getElementById("ownPin").value.trim();
-      if (pin !== "1234") {
-        alert("Invalid PIN! Use 1234 for demo.");
+      const chosenBhawan = document.getElementById("ownBhawan").value;
+      const chosenShop = document.getElementById("ownShopType").value;
+      const enteredPasscode = document.getElementById("ownPin").value.trim().toUpperCase();
+      const expectedPasscode = getExpectedPasscode(chosenBhawan, chosenShop);
+
+      if (enteredPasscode !== expectedPasscode) {
+        alert(`Access Denied! Invalid Stall Passcode for ${chosenBhawan} — ${chosenShop}.`);
         return;
       }
-      selectedBhawan = document.getElementById("ownBhawan").value;
-      selectedShop = document.getElementById("ownShopType").value;
+
+      // Lock session strictly to this shopkeeper's Bhawan and Stall
+      lockedBhawan = chosenBhawan;
+      lockedShop = chosenShop;
       ownerLoggedIn = true;
+      selectedCategory = "All";
 
       const h = new Date().getHours();
       if (h >= 19 || h < 6) {
@@ -556,31 +587,38 @@
 
     function logout() {
       ownerLoggedIn = false;
+      lockedBhawan = null;
+      lockedShop = null;
       document.getElementById("loginBox").classList.remove("hidden");
       document.getElementById("appBox").classList.add("hidden");
       document.getElementById("completedDrawerBtn").classList.add("hidden");
       document.getElementById("logoutBtn").classList.add("hidden");
+      updatePasscodeHint();
     }
 
     function setCrowd(status) {
+      if (!ownerLoggedIn) return;
       unlockAudio();
-      const shopKey = `${selectedBhawan}__${selectedShop}`;
+      const shopKey = `${lockedBhawan}__${lockedShop}`;
       appState.crowdByShop[shopKey] = status;
       appState.votesByShop[shopKey] = { Normal: 0, Crowded: 0 };
       broadcastStateUpdate();
     }
 
     function setItemStock(itemId, newStatus) {
+      if (!ownerLoggedIn) return;
       unlockAudio();
-      const key = `${selectedBhawan}__${itemId}`;
+      const key = `${lockedBhawan}__${itemId}`;
       appState.stockByBhawanItem[key] = newStatus;
       broadcastStateUpdate();
     }
 
-    // Handles Ready, Picked Up (removes from active queue), and Out of Stock (#18)
     function handleOrder(orderId, decision) {
+      if (!ownerLoggedIn) return;
       unlockAudio();
-      const order = appState.orders.find(o => o.orderId === orderId);
+      const order = appState.orders.find(
+        o => o.orderId === orderId && o.bhawan === lockedBhawan && o.shop === lockedShop
+      );
       if (!order) return;
 
       if (decision === "ready") {
@@ -599,24 +637,22 @@
     }
 
     function renderOwner() {
-      if (!ownerLoggedIn) return;
+      if (!ownerLoggedIn || !lockedBhawan || !lockedShop) return;
 
-      document.getElementById("activeOwnerHeader").innerText = `📍 ${selectedBhawan} — ${selectedShop}`;
-      document.getElementById("quickBhawanSwitch").value = selectedBhawan;
-      document.getElementById("quickShopSwitch").value = selectedShop;
-      document.getElementById("ordersBoxTitle").innerText = `🔔 Active Orders — ${selectedBhawan} (${selectedShop})`;
-      document.getElementById("ownerShopTitle").innerText = `${selectedBhawan} — ${selectedShop} Inventory`;
+      document.getElementById("activeOwnerHeader").innerText = `📍 ${lockedBhawan} — ${lockedShop}`;
+      document.getElementById("stallLicenseBadge").innerText = `🔑 License: ${getExpectedPasscode(lockedBhawan, lockedShop)}`;
+      document.getElementById("ordersBoxTitle").innerText = `🔔 Active Orders — ${lockedBhawan} (${lockedShop})`;
+      document.getElementById("ownerShopTitle").innerText = `${lockedBhawan} — ${lockedShop} Inventory`;
 
-      const currentCrowd = getShopCrowd(selectedBhawan, selectedShop);
+      const currentCrowd = getShopCrowd(lockedBhawan, lockedShop);
       const cBadge = document.getElementById("crowdBadge");
       cBadge.className = `badge ${currentCrowd === 'Normal' ? 'badge-green' : 'badge-red'}`;
       cBadge.innerText = currentCrowd === "Normal" ? "🟢 Normal Queue" : "🔴 Heavy Crowd";
 
       const myShopOrders = appState.orders.filter(
-        o => o.bhawan === selectedBhawan && o.shop === selectedShop
+        o => o.bhawan === lockedBhawan && o.shop === lockedShop
       );
 
-      // Separate Active Orders (Pending or Ready) from Completed/Picked Up/Cancelled (#18)
       const activeOrders = myShopOrders.filter(
         o => o.status === "Pending Shopkeeper Approval" || o.status === "✅ Ready for Pickup"
       );
@@ -646,7 +682,7 @@
                   <button class="btn-success" onclick="handleOrder('${o.orderId}', 'ready')">✔ Ready for Pickup</button>
                   <button class="btn-danger" onclick="handleOrder('${o.orderId}', 'reject')">✖ Out of Stock</button>
                 ` : `
-                  <span class="badge badge-green">🔔 Ready — Waiting for Student</span>
+                  <span class="badge badge-green">🔔 Ready — Waiting for Pickup</span>
                   <button class="btn-primary" onclick="handleOrder('${o.orderId}', 'pickedup')">📦 Picked Up (Clear)</button>
                 `}
               </div>
@@ -655,7 +691,6 @@
         }).join("");
       }
 
-      // Render Completed Drawer
       const compList = document.getElementById("completedOrdersList");
       compList.innerHTML = completedOrders.length === 0
         ? `<p style="color:var(--muted); font-size:0.82rem;">No completed orders yet.</p>`
@@ -669,8 +704,7 @@
             </div>
           `).join("");
 
-      // Sub-category filter pills for Shopkeeper
-      const shopItems = BASE_CATALOG.filter(p => p.shop === selectedShop);
+      const shopItems = BASE_CATALOG.filter(p => p.shop === lockedShop);
       const categories = ["All", ...new Set(shopItems.map(i => i.category))];
       document.getElementById("ownerCategoryPills").innerHTML = categories.map(cat => `
         <button class="${selectedCategory === cat ? 'active' : ''}" onclick="selectedCategory='${cat}'; renderOwner();">
@@ -683,7 +717,7 @@
         : shopItems.filter(i => i.category === selectedCategory);
 
       document.getElementById("ownerGrid").innerHTML = visibleItems.map(item => {
-        const st = getItemStatus(selectedBhawan, item);
+        const st = getItemStatus(lockedBhawan, item);
         let bClass = "badge-green";
         if (st === "Low Stock") bClass = "badge-yellow";
         if (st === "Out of Stock") bClass = "badge-red";
